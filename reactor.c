@@ -156,4 +156,11 @@ void runReactor(void *this)
     return reactor;
 }
 
+void freeReactor(void *this)
+{
+    Reactor *reactor = (Reactor*)(this);
+    free(reactor->fds);
+    // Free the reactor struct itself
+    free(reactor);
+}
    

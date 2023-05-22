@@ -29,5 +29,6 @@ void addFd (void * this,int fd, handler_t handler);
 void WaitFor(void * this);
 int handle_client_message(int clientSocket);
 void delFd(Reactor* reactor, int fd);
+void freeReactor(void *this);
 
 
