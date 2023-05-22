@@ -65,7 +65,7 @@ void handle_connection(int serverSocket , Reactor *reactor)
         printf("New client connected: %s\n", inet_ntoa(clientAddr.sin_addr));
         
         // Add clientSocket to the reactor for handling client messages
-        addFd(reactor, clientSocket, handle_client_message);
+        addFd(reactor, clientSocket, (handler_t)handle_client_message);
     } else {
         printf("Maximum number of clients reached. Connection rejected.\n");
         close(clientSocket);
@@ -88,7 +88,7 @@ int main()
     // Set server address
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(8080);
+    serverAddr.sin_port = htons(9034);
     
     // Bind the server socket to the server address
     if (bind(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
@@ -106,10 +106,16 @@ int main()
     Reactor* reactor = createReactor();
     
     // Add serverSocket to the reactor for handling client connections
-    addFd(reactor, serverSocket, handle_connection);
+    addFd(reactor, serverSocket, (handler_t)handle_connection);
     
     // Start the reactor
-     startReactor(reactor);
+    startReactor(reactor);
+
+    while (1)
+    {
+        // Wait for events in the reactor
+         WaitFor(reactor);
+    }
     
     // Cleanup and stop the reactor
     stopReactor(reactor);
