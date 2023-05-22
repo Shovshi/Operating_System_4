@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #define MAX_FDS 100
+typedef void (*handler_t)(int fd);
 
 // Reactor structure
 typedef struct Reactor
@@ -21,13 +22,12 @@ typedef struct Reactor
 
 } Reactor;
 
-typedef void (*handler_t)(int);
 void* createReactor();
 void stopReactor(void * this);
 void startReactor(void * this);
 void addFd (void * this,int fd, handler_t handler);
 void WaitFor(void * this);
-int handle_client_message(int clientSocket);
+void *thread_func(void *arg);
 void delFd(Reactor* reactor, int fd);
 void freeReactor(void *this);
 

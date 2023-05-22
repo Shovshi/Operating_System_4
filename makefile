@@ -1,19 +1,27 @@
 CC = gcc
-CFLAGS = -Wall -Werror -pedantic
-LDFLAGS = -shared
+CFLAGS = -g -Wall
+LIBS = -lpthread
+SHAREDLIB = -shared
+RM = rm -f
 
-LIBRARY_NAME = st_reactor.so
+all: react_server
 
-SRC_FILES = reactor.c
-OBJ_FILES = $(SRC_FILES:.c=.o)
+react_server: react_server.o libreactor.so hashmap.o
+	$(CC) $(CFLAGS) -o react_server react_server.o hashmap.o -L. -lreactor
 
-all: $(LIBRARY_NAME)
+react_server.o: pollserver.c reactor.h
+	$(CC) $(CFLAGS) -c pollserver.c -o react_server.o
 
-$(LIBRARY_NAME): $(OBJ_FILES)
-	$(CC) $(LDFLAGS) $(OBJ_FILES) -o $@
+libreactor.so: reactor.o
+	$(CC) $(CFLAGS) $(SHAREDLIB) -o libreactor.so reactor.o
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+reactor.o: reactor.c reactor.h hashmap.h
+	$(CC) $(CFLAGS) -fPIC -c reactor.c
+
+hashmap.o: hashmap.c hashmap.h
+	$(CC) $(CFLAGS) -c hashmap.c
 
 clean:
-	rm -f $(OBJ_FILES) $(LIBRARY_NAME)
+	$(RM) react_server react_server.o reactor.o hashmap.o libreactor.so
+
+

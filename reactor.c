@@ -24,18 +24,6 @@ void stopReactor(void * this)
     }
 }
 
-void startReactor(void * this)
-{
-    Reactor* reactor = (Reactor*) this;
-    // Create the thread
-    if (pthread_create(&reactor->thread, NULL, handle_client_message, reactor) != 0) 
-    {
-        fprintf(stderr, "Failed to create reactor thread\n");
-        free(reactor);
-        return NULL;
-    }
-}
-
 void addFd (void * this,int fd, handler_t handler)
 {
     if (this == NULL) 
@@ -64,6 +52,19 @@ void addFd (void * this,int fd, handler_t handler)
     reactor->num_of_fds++;
 }
 
+void startReactor(void * this)
+{
+    Reactor* reactor = (Reactor*) this;
+    // Create the thread
+    if (pthread_create(&reactor->thread, NULL, thread_func, reactor) != 0) 
+    {
+        fprintf(stderr, "Failed to create reactor thread\n");
+        free(reactor);
+        return;
+    }
+}
+
+
 void WaitFor(void * this)
 {
     Reactor *reactor = (Reactor *)this;
@@ -73,21 +74,35 @@ void WaitFor(void * this)
     pthread_join(reactor->thread, NULL);
 }
 
-int handle_client_message(int clientSocket)
+void *thread_func(void *arg)
 {
-    char buffer[1024];
-    ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-    if (bytesRead == -1) {
-        perror("recv");
-        return -1;
-    } else if (bytesRead == 0) {
-        return 1;
-    } else {
-        buffer[bytesRead] = '\0';
-        printf("Received message from client: %s\n", buffer);
+    Reactor* reactor = (Reactor*)arg;
+
+    while (reactor->in_action) {
+        fd_set read_fds;
+        int max_fd = 0;
+        FD_ZERO(&read_fds);
+
+        for (int i = 0; i < reactor->num_of_fds; i++) {
+            int fd = reactor->fds[i].fd;
+            FD_SET(fd, &read_fds);
+            if (fd > max_fd)
+                max_fd = fd;
+        }
+
+        int ready = select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+        if (ready > 0) {
+            for (int i = 0; i < reactor->num_of_fds; i++) {
+                int fd = reactor->fds[i].fd;
+                if (FD_ISSET(fd, &read_fds))
+                    reactor->handlers[fd](fd);
+            }
+        }
     }
-    return 0;
+
+    return NULL;
 }
+
 
 void delFd(Reactor* reactor, int fd) 
 {
@@ -153,7 +168,6 @@ void runReactor(void *this)
         }
     }
     printf("Reactor thread finished.\n");
-    return reactor;
 }
 
 void freeReactor(void *this)

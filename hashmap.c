@@ -10,7 +10,7 @@ void initHashmap(Hashmap* hashmap)
 }
 
 // Insert an entry into the hashmap
-void insert(Hashmap* hashmap, int fd, void (*function)(void)) 
+void insert(Hashmap* hashmap, int fd, void (*function)(int)) 
 {
     int index = fd % HASH_SIZE;
     hashmap->clients[index].fd = fd;
@@ -18,7 +18,7 @@ void insert(Hashmap* hashmap, int fd, void (*function)(void))
 }
 
 // Get the function pointer associated with an fd from the hashmap
-void (*get(Hashmap* hashmap, int fd))(void) 
+void (*get(Hashmap* hashmap, int fd))(int) 
 {
     int index = fd % HASH_SIZE;
     return hashmap->clients[index].function;

@@ -4,13 +4,13 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#define HASH_SIZE 128;
+#define HASH_SIZE 128
 
 // Structure for the hashmap entry
 typedef struct Client 
 {
     int fd;
-    void (*function)(void);
+    void (*function)(int);
 } Client;
 
 // Hashmap structure
@@ -20,5 +20,5 @@ typedef struct Hashmap
 } Hashmap;
 
 void initHashmap(Hashmap* hashmap);
-void insert(Hashmap* hashmap, int fd, void (*function)(void));
-void (*get(Hashmap* hashmap, int fd))(void);
+void insert(Hashmap* hashmap, int fd, void (*function)(int));
+void (*get(Hashmap* hashmap, int fd))(int);
