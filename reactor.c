@@ -1,10 +1,26 @@
 #include "reactor.h"
 
-typedef struct Reactor {
-    // Implementation details...
-} Reactor;
+void* createReactor() 
+{
 
-void* createReactor() {
-    // Implementation...
 }
 
+void stopReactor(void * this)
+{
+
+}
+
+void startReactor(void * this)
+{
+
+}
+
+void addFd (void * this,int fd, handler_t handler)
+{
+
+}
+
+void WaitFor(void * this)
+{
+    
+}
