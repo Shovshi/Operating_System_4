@@ -1,4 +1,4 @@
-#include "hashmap.h"
+#pragma once
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,29 +6,32 @@
 #include <sys/poll.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <sys/select.h>
 
 #define MAX_FDS 100
-typedef void (*handler_t)(int fd);
+typedef struct Reactor Reactor;
+typedef void (*handler_t)(int clientSocket, Reactor* reactor);
 
-// Reactor structure
+typedef struct FdNode
+{
+    int fd;
+    handler_t handler;
+    struct FdNode *next;
+} FdNode;
+
 typedef struct Reactor
 {
-    Hashmap hashmap;
+    FdNode *fds;
     int num_of_fds;
     pthread_t thread;
     bool in_action;
     handler_t handlers[MAX_FDS];
-    struct pollfd* fds;
-
+    struct pollfd* poll_fds;
 } Reactor;
 
-void* createReactor();
-void stopReactor(void * this);
-void startReactor(void * this);
-void addFd (void * this,int fd, handler_t handler);
-void WaitFor(void * this);
-void *thread_func(void *arg);
-void delFd(Reactor* reactor, int fd);
-void freeReactor(void *this);
-
-
+Reactor *createReactor();
+void stopReactor(Reactor *reactor);
+void startReactor(Reactor *reactor);
+void addFd(Reactor *reactor, int fd, handler_t handler);
+void waitFor(Reactor *reactor);
+void delFd(int fd, Reactor *reactor);
