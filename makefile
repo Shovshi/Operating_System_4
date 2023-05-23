@@ -21,4 +21,3 @@ reactor.o: reactor.c reactor.h
 clean:
 	$(RM) react_server react_server.o reactor.o libreactor.so
 
-
